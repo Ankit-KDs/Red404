@@ -49,6 +49,8 @@ public class HospitalServlet extends HttpServlet {
                         "phone",      d.getPhone(),
                         "address",    d.getAddress(),
                         "available",  d.isAvailable(),
+                        "latitude",   d.getLatitude(),
+                        "longitude",  d.getLongitude(),
                         "distanceKm", Math.round(HaversineUtil.distance(
                                         h.getLatitude(), h.getLongitude(),
                                         d.getLatitude(), d.getLongitude()) * 10.0) / 10.0
@@ -68,6 +70,8 @@ public class HospitalServlet extends HttpServlet {
                         "phone",      d.getPhone(),
                         "address",    d.getAddress(),
                         "available",  d.isAvailable(),
+                        "latitude",   d.getLatitude(),
+                        "longitude",  d.getLongitude(),
                         "distanceKm", Math.round(HaversineUtil.distance(
                                         h.getLatitude(), h.getLongitude(),
                                         d.getLatitude(), d.getLongitude()) * 10.0) / 10.0

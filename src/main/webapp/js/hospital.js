@@ -93,11 +93,18 @@ async function renderDonors(url, title) {
                   : '<span class="badge badge-gray">Unavailable</span>'}
               </td>
               <td>
-                <button class="btn btn-primary btn-sm"
-                  onclick="openModal(${d.id},'${escAttr(d.name)}','${escAttr(d.bloodGroup)}')"
-                  ${d.available ? '' : 'disabled'}>
-                  🩸 Request
-                </button>
+                ${d.distanceKm > 50
+                  ? `<button class="btn btn-sm" disabled 
+                  style="background:var(--gray-300);color:var(--gray-700);cursor:not-allowed;"
+                  title="Donor is too far away">
+                  📍 Too Far (${d.distanceKm} km)
+                </button>`
+                : `<button class="btn btn-primary btn-sm"
+                onclick="openModal(${d.id},'${escAttr(d.name)}','${escAttr(d.bloodGroup)}',${d.distanceKm})"
+                ${d.available ? '' : 'disabled'}>
+                🩸 Request
+            </button>`
+  }
               </td>
             </tr>
           `).join('')}
@@ -109,14 +116,22 @@ async function renderDonors(url, title) {
 }
 
 // ── Request Modal ─────────────────────────────────────────────
-function openModal(donorId, donorName, bloodGroup) {
+function openModal(donorId, donorName, bloodGroup, distanceKm) {
   document.getElementById('modal-donor-id').value   = donorId;
   document.getElementById('modal-donor-name').value = donorName;
-  document.getElementById('modal-bg').value          = bloodGroup;
-  document.getElementById('modal-message').value     = '';
-  document.getElementById('modal-units').value       = 1;
-  document.getElementById('modal-urgency').value     = 'NORMAL';
-  document.getElementById('alert-modal').innerHTML   = '';
+  document.getElementById('modal-bg').value         = bloodGroup;
+  document.getElementById('modal-message').value    = '';
+  document.getElementById('modal-units').value      = 1;
+  document.getElementById('modal-urgency').value    = 'NORMAL';
+
+  // Distance warning
+  if (distanceKm && distanceKm > 20) {
+    document.getElementById('alert-modal').innerHTML =
+      `<div class="alert alert-info">⚠️ This donor is <strong>${distanceKm} km</strong> away from your hospital.</div>`;
+  } else {
+    document.getElementById('alert-modal').innerHTML = '';
+  }
+
   document.getElementById('request-modal').classList.add('show');
 }
 function closeModal() {

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Red404 AI Assistant</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .chat-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--off-white);
+    }
+    .chat-container {
+      flex: 1;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .chat-header {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .chat-header .bot-avatar {
+      width: 48px; height: 48px;
+      background: var(--red);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .chat-header h2 { font-size: 1.1rem; margin-bottom: 2px; }
+    .chat-header p  { font-size: 0.82rem; color: var(--gray-500); margin: 0; }
+    .online-dot {
+      width: 8px; height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      min-height: 420px;
+      max-height: 500px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .message {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+    .message.user { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; font-weight: 700; flex-shrink: 0;
+    }
+    .bot  .msg-avatar { background: var(--red);  color: white; }
+    .user .msg-avatar { background: var(--dark); color: white; }
+
+    .msg-bubble {
+      max-width: 75%;
+      padding: 0.8rem 1.1rem;
+      border-radius: 16px;
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+    .bot  .msg-bubble {
+      background: var(--off-white);
+      border: 1px solid var(--gray-100);
+      border-top-left-radius: 4px;
+      color: var(--dark);
+    }
+    .user .msg-bubble {
+      background: var(--red);
+      color: white;
+      border-top-right-radius: 4px;
+    }
+    .msg-time {
+      font-size: 0.72rem;
+      color: var(--gray-500);
+      margin-top: 4px;
+      display: block;
+    }
+    .user .msg-time { text-align: right; }
+
+    /* Typing indicator */
+    .typing .msg-bubble {
+      display: flex; gap: 5px; align-items: center;
+      padding: 0.9rem 1.2rem;
+    }
+    .typing-dot {
+      width: 7px; height: 7px;
+      background: var(--gray-500);
+      border-radius: 50%;
+      animation: typingBounce 1.2s infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
+
+    /* Quick questions */
+    .quick-questions {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .quick-btn {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 999px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--dark);
+      font-family: 'DM Sans', sans-serif;
+    }
+    .quick-btn:hover {
+      border-color: var(--red);
+      color: var(--red);
+      background: #FEE2E2;
+    }
+
+    /* Input area */
+    .chat-input-area {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 1rem 1.2rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .chat-input-row {
+      display: flex; gap: 0.8rem; align-items: flex-end;
+    }
+    .chat-input-row textarea {
+      flex: 1;
+      border: 1.5px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      padding: 0.7rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      resize: none;
+      outline: none;
+      max-height: 120px;
+      transition: border-color 0.2s;
+      color: var(--dark);
+      background: var(--off-white);
+    }
+    .chat-input-row textarea:focus { border-color: var(--red); }
+    .send-btn {
+      width: 44px; height: 44px;
+      background: var(--red);
+      border: none; border-radius: var(--radius-sm);
+      color: white; font-size: 1.2rem;
+      cursor: pointer; transition: background 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { background: var(--red-dark); }
+    .send-btn:disabled { background: var(--gray-300); cursor: not-allowed; }
+
+    .input-hint {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+      margin-top: 0.5rem;
+    }
+
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--gray-500); font-size: 0.88rem;
+      margin-bottom: 0.5rem;
+      background: none; border: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      padding: 0;
+    }
+    .back-btn:hover { color: var(--red); }
+  </style>
+</head>
+<body class="chat-page">
+
+<nav class="navbar">
+  <div class="navbar-brand">🩸 Red<span class="dot">404</span></div>
+  <div class="navbar-links">
+    <span id="nav-name" style="color:var(--gray-300);font-size:.9rem;"></span>
+  </div>
+</nav>
+
+<div class="chat-container">
+
+  <!-- Back Button -->
+  <button class="back-btn" onclick="goBack()">← Back to Dashboard</button>
+
+  <!-- Chat Header -->
+  <div class="chat-header">
+    <div class="bot-avatar">🤖</div>
+    <div>
+      <h2>Red404 AI Assistant</h2>
+      <p><span class="online-dot"></span>Online — Blood donation expert</p>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages" id="chat-messages">
+    <!-- Welcome message -->
+    <div class="message bot">
+      <div class="msg-avatar">🤖</div>
+      <div>
+        <div class="msg-bubble">
+          Namaste! 🩸 Main Red404 ka AI Assistant hun.<br/><br/>
+          Main aapki madad kar sakta hun:<br/>
+          • Blood donation ke baare me jaankari<br/>
+          • Eligibility check karne me<br/>
+          • Donation process samjhane me<br/>
+          • Blood groups ke baare me<br/><br/>
+          Kya jaanna chahte hain aap?
+        </div>
+        <span class="msg-time" id="welcome-time"></span>
+        <!-- Quick Questions -->
+        <div class="quick-questions">
+          <button class="quick-btn" onclick="sendQuick('Kya mai blood donate kar sakta hun?')">Eligibility check</button>
+          <button class="quick-btn" onclick="sendQuick('Blood donation ke fayde kya hain?')">Donation ke fayde</button>
+          <button class="quick-btn" onclick="sendQuick('Donate karne ke baad kya khaana chahiye?')">Baad me kya khaayein</button>
+          <button class="quick-btn" onclick="sendQuick('O+ blood group ke baare me batao')">Blood groups</button>
+          <button class="quick-btn" onclick="sendQuick('Kitne din baad dobara donate kar sakte hain?')">Kitne din baad?</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div class="chat-input-area">
+    <div class="chat-input-row">
+      <textarea
+        id="user-input"
+        rows="1"
+        placeholder="Ask Something about Blood Donation..."
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+    <p class="input-hint">Click Enter to Send • Shift+Enter for New line</p>
+  </div>
+
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  // ── YOUR GROQ API KEY — YAHAN DAALO ──────────────────────────
+  const GROQ_API_KEY = 'YOUR_GROQ_API_KEY';
+  const GROQ_MODEL = 'llama-3.3-70b-versatile';
+  const GROQ_URL     = 'https://api.groq.com/openai/v1/chat/completions';
+
+  // ── System prompt — chatbot ka personality ────────────────────
+  const SYSTEM_PROMPT = `Tu Red404 ka AI Assistant hai — ek real-time blood donation system.
+Tu sirf blood donation, blood groups, health, aur Red404 platform se related sawaalon ke jawaab deta hai.
+Agar koi aur topic poocha jaye to politely kehta hai ki main sirf blood donation ke baare me help kar sakta hun.
+
+Tere paas ye jaankari hai:
+- Blood donation eligibility: 18-65 saal, weight 50kg+, healthy hona chahiye
+- Dobara donate karne ka time: Male = 90 din, Female = 120 din
+- Ek baar me 350-450ml blood leta hai
+- Donation ke baad: paani zyada piyo, iron-rich khana khao, heavy exercise mat karo 24 ghante
+- Blood groups: A+, A-, B+, B-, AB+, AB-, O+, O- — O- universal donor, AB+ universal recipient
+- Red404 me donor register kar sakte hain, hospital blood request bhej sakta hai
+- Zone-based matching: 5-10km radius me donors dhundhe jaate hain
+
+Hinglish me baat kar (Hindi + English mix) — friendly aur helpful tone rakho.
+Short aur clear jawab do — zyada lamba mat likho.`;
+
+  // ── Conversation history ──────────────────────────────────────
+  const messages = [];
+
+  // ── Init ─────────────────────────────────────────────────────
+  document.getElementById('welcome-time').textContent = getTime();
+  const user = Auth.getUser();
+  if (user.name) document.getElementById('nav-name').textContent = user.name;
+
+  // ── Go back to dashboard ──────────────────────────────────────
+  function goBack() {
+    const type = sessionStorage.getItem('userType');
+    window.location.href = type === 'DONOR' ? 'donor-dashboard.html' : 'hospital-dashboard.html';
+  }
+
+  // ── Send quick question ───────────────────────────────────────
+  function sendQuick(text) {
+    document.getElementById('user-input').value = text;
+    sendMessage();
+  }
+
+  // ── Handle Enter key ──────────────────────────────────────────
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  // ── Auto resize textarea ──────────────────────────────────────
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  // ── Main send function ────────────────────────────────────────
+  async function sendMessage() {
+    const input   = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const text    = input.value.trim();
+    if (!text) return;
+
+    // Add user message to UI
+    addMessage('user', text);
+    input.value = '';
+    input.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    // Add to history
+    messages.push({ role: 'user', content: text });
+
+    // Show typing indicator
+    const typingId = showTyping();
+
+    try {
+      const response = await fetch(GROQ_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model:    GROQ_MODEL,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            ...messages
+          ],
+          max_tokens:  500,
+          temperature: 0.7
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const reply = data.choices[0].message.content;
+        messages.push({ role: 'assistant', content: reply });
+        removeTyping(typingId);
+        addMessage('bot', reply);
+      } else {
+        removeTyping(typingId);
+        addMessage('bot', '❌ Error occured. try again later.');
+        console.error('Groq error:', data);
+      }
+    } catch(err) {
+      removeTyping(typingId);
+      addMessage('bot', '❌ Network error. Check your internet connection.');
+      console.error(err);
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  // ── Add message to chat ───────────────────────────────────────
+  function addMessage(type, text) {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = `message ${type}`;
+
+    const avatar = type === 'bot' ? '🤖' : (Auth.getUser().name || 'U').charAt(0).toUpperCase();
+
+    div.innerHTML = `
+      <div class="msg-avatar">${avatar}</div>
+      <div>
+        <div class="msg-bubble">${formatText(text)}</div>
+        <span class="msg-time">${getTime()}</span>
+      </div>`;
+
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // ── Typing indicator ──────────────────────────────────────────
+  function showTyping() {
+    const id = 'typing-' + Date.now();
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'message bot typing';
+    div.id = id;
+    div.innerHTML = `
+      <div class="msg-avatar">🤖</div>
+      <div class="msg-bubble">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return id;
+  }
+
+  function removeTyping(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  }
+
+  // ── Format text — newlines to <br> ───────────────────────────
+  function formatText(text) {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br/>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  }
+
+  // ── Get current time ──────────────────────────────────────────
+  function getTime() {
+    return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  }
+</script>
+</body>
+</html>

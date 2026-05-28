@@ -6,6 +6,87 @@
   <title>Hospital Dashboard — Red404</title>
   <link rel="stylesheet" href="css/style.css"/>
   <script src="js/auth.js"></script>
+
+  <!-- Leaflet CSS — Free Map Library -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    /* ── Map Section ── */
+    #map-container {
+      height: 500px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      z-index: 1;
+    }
+    .map-controls {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      align-items: flex-end; margin-bottom: 1.2rem;
+    }
+    .map-legend {
+      display: flex; gap: 1.5rem; flex-wrap: wrap;
+      padding: 1rem 1.2rem;
+      background: var(--white);
+      border-radius: var(--radius-sm);
+      margin-top: 1rem;
+      box-shadow: var(--shadow-sm);
+      font-size: 0.85rem;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+    .legend-dot  { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    .dot-hospital { background: #C0152A; }
+    .dot-available   { background: #22c55e; }
+    .dot-unavailable { background: #94a3b8; }
+
+    /* Leaflet popup custom style */
+    .leaflet-popup-content-wrapper {
+      border-radius: 10px !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+    }
+    .popup-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 0.95rem;
+      color: #1A1210; margin-bottom: 6px;
+    }
+    .popup-row {
+      font-size: 0.82rem; color: #4A4440;
+      margin-bottom: 3px; display: flex; gap: 6px;
+    }
+    .popup-badge {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 999px; font-size: 0.72rem;
+      font-weight: 700; margin-top: 6px;
+    }
+    .popup-badge.available   { background: #D1FAE5; color: #065F46; }
+    .popup-badge.unavailable { background: #F1F5F9; color: #64748B; }
+    .popup-blood {
+      display: inline-block; width: 32px; height: 32px;
+      border-radius: 50%; background: #C0152A; color: white;
+      font-size: 0.7rem; font-weight: 800;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-right: 6px;
+    }
+    .popup-request-btn {
+      display: block; width: 100%; margin-top: 10px;
+      padding: 6px; background: #C0152A; color: white;
+      border: none; border-radius: 6px; font-size: 0.82rem;
+      font-weight: 600; cursor: pointer; text-align: center;
+    }
+    .popup-request-btn:hover { background: #8B0D1C; }
+    .popup-request-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    .map-stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr));
+      gap: 1rem; margin-bottom: 1.2rem;
+    }
+    .map-stat {
+      background: var(--white); border-radius: var(--radius-sm);
+      padding: 1rem; text-align: center; box-shadow: var(--shadow-sm);
+    }
+    .map-stat .val { font-family: 'Syne',sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--red); }
+    .map-stat .lbl { font-size: 0.75rem; color: var(--gray-500); text-transform: uppercase; letter-spacing: .05em; }
+  </style>
 </head>
 <body>
 
@@ -13,6 +94,7 @@
 <nav class="navbar">
   <div class="navbar-brand">🏥 Red<span class="dot">404</span></div>
   <div class="navbar-links">
+    <a href="chatbot.html" class="btn-nav" style="background:var(--gray-700);">🤖 AI Assistant</a>
     <span id="nav-name" style="color:var(--gray-300);font-size:0.9rem;"></span>
     <button onclick="logout()" class="btn-nav" style="background:transparent;border:1.5px solid #555;color:var(--gray-300);padding:.4rem 1rem;border-radius:6px;cursor:pointer;font-size:.85rem;">Logout</button>
   </div>
@@ -30,6 +112,7 @@
     <nav class="sidebar-nav">
       <a href="#" class="active" onclick="show('overview',this)"><span class="icon">📊</span><span>Overview</span></a>
       <a href="#" onclick="show('donors',this)"><span class="icon">👥</span><span>Find Donors</span></a>
+      <a href="#" onclick="show('map',this)"><span class="icon">🗺️</span><span>Donor Map</span></a>
       <a href="#" onclick="show('requests',this)"><span class="icon">📋</span><span>My Requests</span></a>
       <a href="#" onclick="show('profile',this)"><span class="icon">🏥</span><span>Profile</span></a>
       <a href="#" onclick="show('password',this)"><span class="icon">🔒</span><span>Password</span></a>
@@ -91,6 +174,79 @@
       <div id="alert-donors"></div>
       <div class="card">
         <div class="table-wrap" id="donors-table-wrap"><p style="color:var(--gray-500);">Search for donors above.</p></div>
+      </div>
+    </section>
+
+    <!-- ── Donor Map Section ── -->
+    <section id="sec-map" class="tab-section">
+      <div class="page-header">
+        <h2>Donor Map</h2>
+        <p>View all donors on the map — click a pin to send a blood request</p>
+      </div>
+
+      <!-- Map Controls -->
+      <div class="map-controls">
+        <div class="form-group" style="margin:0;min-width:150px;">
+          <label>Filter by Blood Group</label>
+          <select id="map-bg-filter" class="form-control" onchange="applyMapFilter()">
+            <option value="">All Blood Groups</option>
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option>
+            <option>O+</option><option>O-</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;min-width:150px;">
+          <label>Availability</label>
+          <select id="map-avail-filter" class="form-control" onchange="applyMapFilter()">
+            <option value="">All Donors</option>
+            <option value="true">Available Only</option>
+            <option value="false">Unavailable Only</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0;min-width:150px;">
+          <label>Show Zone Radius</label>
+          <select id="map-radius-filter" class="form-control" onchange="updateZoneCircle()">
+            <option value="0">Hide Zone</option>
+            <option value="5">5 km Zone</option>
+            <option value="10" selected>10 km Zone</option>
+            <option value="20">20 km Zone</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="loadMapDonors()">🔄 Refresh Map</button>
+      </div>
+
+      <!-- Map Quick Stats -->
+      <div class="map-stats-row">
+        <div class="map-stat">
+          <div class="val" id="map-total">—</div>
+          <div class="lbl">Total Donors</div>
+        </div>
+        <div class="map-stat">
+          <div class="val" id="map-available" style="color:#22c55e;">—</div>
+          <div class="lbl">Available</div>
+        </div>
+        <div class="map-stat">
+          <div class="val" id="map-nearest">—</div>
+          <div class="lbl">Nearest (km)</div>
+        </div>
+        <div class="map-stat">
+          <div class="val" id="map-bloodgroups">—</div>
+          <div class="lbl">Blood Groups</div>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div id="map-container"></div>
+
+      <!-- Legend -->
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot dot-hospital"></div> Your Hospital</div>
+        <div class="legend-item"><div class="legend-dot dot-available"></div> Available Donor</div>
+        <div class="legend-item"><div class="legend-dot dot-unavailable"></div> Unavailable Donor</div>
+        <div class="legend-item" style="color:var(--gray-500);font-size:.8rem;margin-left:auto;">
+          📍 Click any pin to view donor details & send request
+        </div>
       </div>
     </section>
 
@@ -176,5 +332,186 @@
 </div>
 
 <script src="js/hospital.js"></script>
+
+<script>
+// ============================================================
+// MAP LOGIC — Leaflet.js
+// ============================================================
+
+let map           = null;
+let hospitalMarker = null;
+let donorMarkers  = [];
+let zoneCircle    = null;
+let allDonors     = [];
+let hospitalData  = null;
+
+// ── Initialize Map ────────────────────────────────────────────
+function initMap(lat, lon) {
+  if (map) return; // already initialized
+
+  map = L.map('map-container').setView([lat, lon], 13);
+
+  // OpenStreetMap tiles — completely free
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18
+  }).addTo(map);
+
+  // Hospital marker — red color
+  const hospitalIcon = L.divIcon({
+    className: '',
+    html: `<div style="
+      width:44px;height:44px;border-radius:50%;
+      background:#C0152A;border:3px solid white;
+      box-shadow:0 2px 8px rgba(0,0,0,0.3);
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.3rem;">🏥</div>`,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+    popupAnchor: [0, -24]
+  });
+
+  hospitalMarker = L.marker([lat, lon], { icon: hospitalIcon })
+    .addTo(map)
+    .bindPopup(`
+      <div class="popup-title">🏥 ${hospitalData.name}</div>
+      <div class="popup-row">📍 ${hospitalData.address}</div>
+      <div class="popup-row">📞 ${hospitalData.phone}</div>
+      <span class="popup-badge available">Your Location</span>
+    `);
+
+  // Zone circle
+  updateZoneCircle();
+}
+
+// ── Update zone circle ────────────────────────────────────────
+function updateZoneCircle() {
+  if (!map || !hospitalData) return;
+  if (zoneCircle) { map.removeLayer(zoneCircle); zoneCircle = null; }
+  const radius = parseInt(document.getElementById('map-radius-filter').value);
+  if (radius > 0) {
+    zoneCircle = L.circle([hospitalData.latitude, hospitalData.longitude], {
+      radius: radius * 1000, // km to meters
+      color: '#C0152A', fillColor: '#C0152A',
+      fillOpacity: 0.06, weight: 2, dashArray: '6,4'
+    }).addTo(map);
+  }
+}
+
+// ── Load donors on map ────────────────────────────────────────
+async function loadMapDonors() {
+  if (!hospitalData) {
+    const { ok, data } = await API.get('/api/hospital/profile');
+    if (!ok) return;
+    hospitalData = data;
+  }
+
+  // Init map if not done
+  const lat = hospitalData.latitude  || 20.5937;
+  const lon = hospitalData.longitude || 78.9629;
+  initMap(lat, lon);
+
+  // Fetch all donors
+  const { ok, data: donors } = await API.get('/api/hospital/donors');
+  if (!ok) return;
+  allDonors = donors;
+
+  renderMapDonors(donors);
+}
+
+// ── Render donor pins ─────────────────────────────────────────
+function renderMapDonors(donors) {
+  // Clear old markers
+  donorMarkers.forEach(m => map.removeLayer(m));
+  donorMarkers = [];
+
+  let availableCount = 0;
+  let nearestDist    = Infinity;
+  const bloodGroups  = new Set();
+
+  donors.forEach(d => {
+    if (!d.latitude && !d.longitude) return;
+    if (d.available) availableCount++;
+    if (d.distanceKm < nearestDist) nearestDist = d.distanceKm;
+    bloodGroups.add(d.bloodGroup);
+
+    // Pin color: green = available, gray = unavailable
+    const color = d.available ? '#22c55e' : '#94a3b8';
+    const border = d.available ? '#16a34a' : '#64748b';
+
+    const donorIcon = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:38px;height:38px;border-radius:50%;
+        background:${color};border:2px solid ${border};
+        box-shadow:0 2px 6px rgba(0,0,0,0.25);
+        display:flex;align-items:center;justify-content:center;
+        font-family:'Syne',sans-serif;font-size:0.65rem;
+        font-weight:800;color:white;">
+        ${escHtml(d.bloodGroup)}
+      </div>`,
+      iconSize: [38, 38],
+      iconAnchor: [19, 19],
+      popupAnchor: [0, -22]
+    });
+
+    const requestBtnDisabled = !d.available ? 'disabled' : '';
+    const requestBtnText     = d.available ? '🩸 Send Blood Request' : 'Donor Unavailable';
+
+    const marker = L.marker([d.latitude, d.longitude], { icon: donorIcon })
+      .addTo(map)
+      .bindPopup(`
+        <div style="min-width:200px;">
+          <div class="popup-title">
+            <span class="popup-blood">${escHtml(d.bloodGroup)}</span>
+            ${escHtml(d.name)}
+          </div>
+          <div class="popup-row">📍 ${escHtml(d.address)}</div>
+          <div class="popup-row">📏 ${d.distanceKm} km from hospital</div>
+          <span class="popup-badge ${d.available ? 'available' : 'unavailable'}">
+            ${d.available ? '✓ Available' : '✗ Unavailable'}
+          </span>
+          <button class="popup-request-btn" ${requestBtnDisabled}
+            onclick="openModal(${d.id},'${escAttr(d.name)}','${escAttr(d.bloodGroup)}');map.closePopup();">
+            ${requestBtnText}
+          </button>
+        </div>
+      `, { maxWidth: 260 });
+
+    donorMarkers.push(marker);
+  });
+
+  // Update stats
+  document.getElementById('map-total').textContent      = donors.length;
+  document.getElementById('map-available').textContent  = availableCount;
+  document.getElementById('map-nearest').textContent    = nearestDist === Infinity ? '—' : nearestDist.toFixed(1);
+  document.getElementById('map-bloodgroups').textContent = bloodGroups.size;
+}
+
+// ── Apply filters ─────────────────────────────────────────────
+function applyMapFilter() {
+  const bgFilter    = document.getElementById('map-bg-filter').value;
+  const availFilter = document.getElementById('map-avail-filter').value;
+
+  let filtered = allDonors;
+  if (bgFilter)    filtered = filtered.filter(d => d.bloodGroup === bgFilter);
+  if (availFilter) filtered = filtered.filter(d => String(d.available) === availFilter);
+
+  renderMapDonors(filtered);
+}
+
+// ── Override show() to init map when tab opens ────────────────
+const _origShow = window.show;
+window.show = function(section, el) {
+  _origShow(section, el);
+  if (section === 'map') {
+    setTimeout(() => {
+      loadMapDonors();
+      if (map) map.invalidateSize(); // fix map render issue in hidden div
+    }, 100);
+  }
+};
+</script>
+
 </body>
 </html>

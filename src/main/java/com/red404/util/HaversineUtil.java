@@ -55,8 +55,8 @@ public class HaversineUtil {
 
     /** Quick check: is distance within threshold? */
     public static boolean isWithinRadius(double lat1, double lon1,
-                                         double lat2, double lon2,
-                                         double radiusKm) {
+                                        double lat2, double lon2,
+                                        double radiusKm) {
         return distance(lat1, lon1, lat2, lon2) <= radiusKm;
     }
 }

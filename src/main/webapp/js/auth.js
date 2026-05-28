@@ -235,6 +235,13 @@ function formatDate(ts) {
 
 // ── On page load: redirect if already logged in ───────────────
 // (only runs on login/register pages — dashboards won't call this)
-if (document.body.classList.contains('auth-page')) {
-  Auth.redirectIfLoggedIn();
-}
+// if (document.body.classList.contains('auth-page')) {
+//   Auth.redirectIfLoggedIn();
+// }
+
+// ── On page load: redirect if already logged in ───────────────
+try {
+  if (document.body && document.body.classList.contains('auth-page')) {
+    Auth.redirectIfLoggedIn();
+  }
+} catch(e) {}
