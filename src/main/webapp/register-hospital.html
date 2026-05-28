@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hospital Registration — Red404</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/auth.js" defer></script>
+</head>
+<body class="auth-page" style="align-items:flex-start;padding:2rem 0;">
+
+<div class="auth-box" style="max-width:640px;">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="logo">🏥 Red404</div>
+      <h2 style="font-size:1.3rem;">Register Your Hospital</h2>
+      <p style="color:var(--gray-500);font-size:0.88rem;">Connect with blood donors near you</p>
+    </div>
+
+    <div id="alert-box"></div>
+
+    <form id="reg-form" onsubmit="register(event)">
+      <h3 style="color:var(--red);font-size:0.85rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;">Hospital Details</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hospital Name *</label>
+          <input type="text" id="name" class="form-control" placeholder="Full hospital name" required/>
+        </div>
+        <div class="form-group">
+          <label>Registration ID *</label>
+          <input type="text" id="regId" class="form-control" placeholder="Govt. reg. number" required/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hospital Phone *</label>
+          <input type="tel" id="phone" class="form-control" placeholder="Landline or mobile" required/>
+        </div>
+        <div class="form-group">
+          <label>Hospital Email *</label>
+          <input type="email" id="email" class="form-control" placeholder="hospital@org.com" required/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Hospital Address *</label>
+        <input type="text" id="address" class="form-control" placeholder="Full postal address" required/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Latitude</label>
+          <input type="number" id="lat" class="form-control" step="any" placeholder="Auto-detect below" readonly/>
+        </div>
+        <div class="form-group">
+          <label>Longitude</label>
+          <input type="number" id="lon" class="form-control" step="any" placeholder="Auto-detect below" readonly/>
+        </div>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" onclick="getLocation()" style="margin-bottom:1.5rem;">
+        📍 Auto-detect Hospital Location
+      </button>
+
+      <h3 style="color:var(--red);font-size:0.85rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;">Admin / Contact Person</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Admin Name *</label>
+          <input type="text" id="adminName" class="form-control" placeholder="Doctor / Administrator" required/>
+        </div>
+        <div class="form-group">
+          <label>Admin Phone *</label>
+          <input type="tel" id="adminPhone" class="form-control" placeholder="Personal mobile" required/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Admin Email *</label>
+        <input type="email" id="adminEmail" class="form-control" placeholder="admin@hospital.com" required/>
+      </div>
+
+      <h3 style="color:var(--red);font-size:0.85rem;text-transform:uppercase;letter-spacing:.06em;margin:.5rem 0 1rem;">Login Credentials</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Password *</label>
+          <input type="password" id="password" class="form-control" placeholder="Min 8 characters" minlength="8" required/>
+        </div>
+        <div class="form-group">
+          <label>Confirm Password *</label>
+          <input type="password" id="confirm" class="form-control" required/>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:.5rem;" id="reg-btn">
+        Register Hospital
+      </button>
+    </form>
+
+    <div style="text-align:center;margin-top:1.2rem;font-size:0.88rem;color:var(--gray-500);">
+      Already registered? <a href="login.html">Sign in here</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getLocation() {
+    const btn = event.target;
+    detectLocation('lat', 'lon', btn);  // auth.js helper
+  }
+
+  async function register(e) {
+    e.preventDefault();
+
+    const fields = {
+      name:           document.getElementById('name').value.trim(),
+      registrationId: document.getElementById('regId').value.trim(),
+      phone:          document.getElementById('phone').value.trim(),
+      email:          document.getElementById('email').value.trim(),
+      address:        document.getElementById('address').value.trim(),
+      adminName:      document.getElementById('adminName').value.trim(),
+      adminPhone:     document.getElementById('adminPhone').value.trim(),
+      adminEmail:     document.getElementById('adminEmail').value.trim(),
+      password:       document.getElementById('password').value,
+      confirm:        document.getElementById('confirm').value
+    };
+
+    // Validate using auth.js Validate helper
+    const errors = Validate.hospitalForm(fields);
+    if (errors.length > 0) {
+      showAlert('alert-box', errors[0], 'error'); return;
+    }
+
+    setButtonLoading('reg-btn', true, 'Register Hospital');
+
+    const payload = {
+      ...fields,
+      latitude:  parseFloat(document.getElementById('lat').value)  || 0,
+      longitude: parseFloat(document.getElementById('lon').value) || 0
+    };
+    delete payload.confirm; // don't send confirm to backend
+
+    try {
+      const { ok, data } = await API.post('/api/auth/hospital/register', payload);
+      if (ok) {
+        Auth.saveSession(data);
+        window.location.href = 'hospital-dashboard.html';
+      } else {
+        showAlert('alert-box', data.error || 'Registration failed. Please try again.', 'error');
+      }
+    } catch(err) {
+      showAlert('alert-box', 'Network error. Please check your connection.', 'error');
+    } finally {
+      setButtonLoading('reg-btn', false, 'Register Hospital');
+    }
+  }
+</script>
+</body>
+</html>

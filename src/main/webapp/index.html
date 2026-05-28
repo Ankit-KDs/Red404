@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Red404 — Real-Time Blood Donation</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <div class="navbar-brand">🩸 Red<span class="dot">404</span></div>
+  <div class="navbar-links">
+    <a href="login.html">Login</a>
+    <a href="register-donor.html" class="btn-nav">Register as Donor</a>
+    <a href="register-hospital.html" class="btn-nav" style="background:var(--dark);border:1.5px solid #555;">Register Hospital</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="pulse-ring"></div>
+  <div class="pulse-ring"></div>
+  <div class="hero-content">
+    <h1>Every Drop<br/>Saves a <span>Life</span></h1>
+    <p>Red404 connects blood donors with hospitals in real time. Find donors within your zone, send requests instantly, and track every donation — all in one place.</p>
+    <div class="hero-buttons">
+      <a href="register-donor.html" class="btn btn-primary">🩸 Become a Donor</a>
+      <a href="register-hospital.html" class="btn btn-outline" style="border-color:var(--white);color:var(--white);">🏥 Register Hospital</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features ── -->
+<section style="background: var(--off-white); padding: 1rem 0;">
+  <div style="text-align:center;padding:3rem 2rem 1rem;">
+    <h2>How Red404 Works</h2>
+    <p style="max-width:500px;margin:.8rem auto;">A smart, zone-based matching system that gets the right blood to the right place fast.</p>
+  </div>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">📍</div>
+      <h3>Zone-Based Matching</h3>
+      <p>Donors are grouped into 5–10 km zones using our grid algorithm. Hospitals instantly find donors nearby without scanning the whole database.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📏</div>
+      <h3>Haversine Distance</h3>
+      <p>Accurate real-world distances between donor and hospital are calculated using the Haversine formula for precise geo-matching.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚨</div>
+      <h3>Urgency Prioritization</h3>
+      <p>Blood requests are sorted by urgency — CRITICAL cases surface first, ensuring donors see the most urgent needs at the top.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🩺</div>
+      <h3>Hospital Dashboard</h3>
+      <p>Hospitals can search donors by blood group, send targeted requests, and track all blood request statuses in real time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stats Banner ── -->
+<section style="background:var(--dark);padding:3rem 2rem;text-align:center;">
+  <div style="display:flex;justify-content:center;gap:4rem;flex-wrap:wrap;">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:var(--red-light);">8+</div>
+      <div style="color:var(--gray-300);font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;">Blood Groups</div>
+    </div>
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:var(--red-light);">10km</div>
+      <div style="color:var(--gray-300);font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;">Zone Radius</div>
+    </div>
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:var(--red-light);">Real-Time</div>
+      <div style="color:var(--gray-300);font-size:0.85rem;text-transform:uppercase;letter-spacing:.08em;">Requests</div>
+    </div>
+  </div>
+</section>
+
+<footer style="background:var(--dark);padding:1.5rem 2rem;text-align:center;border-top:1px solid #333;">
+  <p style="color:var(--gray-500);font-size:0.85rem;">© 2025 Red404 — Real-Time Blood Donation System</p>
+</footer>
+
+</body>
+</html>

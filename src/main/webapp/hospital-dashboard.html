@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hospital Dashboard — Red404</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/auth.js"></script>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <div class="navbar-brand">🏥 Red<span class="dot">404</span></div>
+  <div class="navbar-links">
+    <span id="nav-name" style="color:var(--gray-300);font-size:0.9rem;"></span>
+    <button onclick="logout()" class="btn-nav" style="background:transparent;border:1.5px solid #555;color:var(--gray-300);padding:.4rem 1rem;border-radius:6px;cursor:pointer;font-size:.85rem;">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="avatar-letter">H</div>
+      <div class="sidebar-user-name" id="sidebar-name">Hospital</div>
+      <div class="sidebar-user-role">Hospital Admin</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="active" onclick="show('overview',this)"><span class="icon">📊</span><span>Overview</span></a>
+      <a href="#" onclick="show('donors',this)"><span class="icon">👥</span><span>Find Donors</span></a>
+      <a href="#" onclick="show('requests',this)"><span class="icon">📋</span><span>My Requests</span></a>
+      <a href="#" onclick="show('profile',this)"><span class="icon">🏥</span><span>Profile</span></a>
+      <a href="#" onclick="show('password',this)"><span class="icon">🔒</span><span>Password</span></a>
+    </nav>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main-content">
+
+    <!-- Overview -->
+    <section id="sec-overview" class="tab-section active">
+      <div class="page-header">
+        <h2 id="welcome-name">Hospital Dashboard</h2>
+        <p>Blood request overview and activity</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="stat-pending">—</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-accepted">—</div><div class="stat-label">Accepted</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-fulfilled">—</div><div class="stat-label">Fulfilled</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-rejected">—</div><div class="stat-label">Rejected</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Recent Requests</div>
+        <div class="table-wrap" id="overview-requests-wrap"><p style="color:var(--gray-500);">Loading...</p></div>
+      </div>
+    </section>
+
+    <!-- Find Donors -->
+    <section id="sec-donors" class="tab-section">
+      <div class="page-header">
+        <h2>Find Blood Donors</h2>
+        <p>Search nearby donors by blood group using zone-based matching</p>
+      </div>
+      <div class="card" style="margin-bottom:1.5rem;">
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+          <div class="form-group" style="margin:0;flex:1;min-width:140px;">
+            <label>Blood Group</label>
+            <select id="search-bg" class="form-control">
+              <option value="">All Types</option>
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option>
+              <option>O+</option><option>O-</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;flex:1;min-width:140px;">
+            <label>Radius (km)</label>
+            <select id="search-radius" class="form-control">
+              <option value="5">5 km</option>
+              <option value="10" selected>10 km</option>
+              <option value="20">20 km</option>
+              <option value="50">50 km</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="searchDonors()">🔍 Search Nearby</button>
+          <button class="btn btn-outline" onclick="loadAllDonors()">Show All Donors</button>
+        </div>
+      </div>
+      <div id="alert-donors"></div>
+      <div class="card">
+        <div class="table-wrap" id="donors-table-wrap"><p style="color:var(--gray-500);">Search for donors above.</p></div>
+      </div>
+    </section>
+
+    <!-- My Requests -->
+    <section id="sec-requests" class="tab-section">
+      <div class="page-header">
+        <h2>Blood Requests Sent</h2>
+        <p>Track status of all your requests</p>
+      </div>
+      <div class="card">
+        <div class="table-wrap" id="my-requests-wrap"><p style="color:var(--gray-500);">Loading...</p></div>
+      </div>
+    </section>
+
+    <!-- Profile -->
+    <section id="sec-profile" class="tab-section">
+      <div class="page-header"><h2>Hospital Profile</h2><p>Update hospital and admin details</p></div>
+      <div class="card" style="max-width:560px;">
+        <div id="alert-profile"></div>
+        <form onsubmit="updateProfile(event)">
+          <div class="form-group"><label>Hospital Name</label><input type="text" id="p-name" class="form-control" required/></div>
+          <div class="form-group"><label>Phone</label><input type="tel" id="p-phone" class="form-control"/></div>
+          <div class="form-group"><label>Address</label><input type="text" id="p-address" class="form-control"/></div>
+          <div class="form-group"><label>Admin Name</label><input type="text" id="p-adminname" class="form-control"/></div>
+          <div class="form-row">
+            <div class="form-group"><label>Admin Phone</label><input type="tel" id="p-adminphone" class="form-control"/></div>
+            <div class="form-group"><label>Admin Email</label><input type="email" id="p-adminemail" class="form-control"/></div>
+          </div>
+          <button type="submit" class="btn btn-primary" id="profile-btn">Save Changes</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Password -->
+    <section id="sec-password" class="tab-section">
+      <div class="page-header"><h2>Change Password</h2><p>Keep your hospital account secure</p></div>
+      <div class="card" style="max-width:420px;">
+        <div id="alert-password"></div>
+        <form onsubmit="changePassword(event)">
+          <div class="form-group"><label>Current Password</label><input type="password" id="pw-current" class="form-control" required/></div>
+          <div class="form-group"><label>New Password</label><input type="password" id="pw-new" class="form-control" minlength="8" required/></div>
+          <div class="form-group"><label>Confirm New Password</label><input type="password" id="pw-confirm" class="form-control" required/></div>
+          <button type="submit" class="btn btn-primary" id="pw-btn">Update Password</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ── Send Request Modal ── -->
+<div class="modal-overlay" id="request-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 style="margin-bottom:1rem;">Send Blood Request</h3>
+    <input type="hidden" id="modal-donor-id"/>
+    <div class="form-group"><label>Donor Name</label><input type="text" id="modal-donor-name" class="form-control" readonly/></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Blood Group</label>
+        <input type="text" id="modal-bg" class="form-control" readonly/>
+      </div>
+      <div class="form-group">
+        <label>Units Needed</label>
+        <input type="number" id="modal-units" class="form-control" min="1" max="10" value="1"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Urgency</label>
+      <select id="modal-urgency" class="form-control">
+        <option value="NORMAL">Normal</option>
+        <option value="HIGH">High</option>
+        <option value="CRITICAL">Critical</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Message (optional)</label>
+      <textarea id="modal-message" class="form-control" rows="3" placeholder="Reason or additional info..."></textarea>
+    </div>
+    <div id="alert-modal"></div>
+    <button class="btn btn-primary" onclick="sendRequest()" id="send-btn">🩸 Send Request</button>
+  </div>
+</div>
+
+<script src="js/hospital.js"></script>
+</body>
+</html>

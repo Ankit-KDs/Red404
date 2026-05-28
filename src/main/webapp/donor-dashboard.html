@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Donor Dashboard — Red404</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="js/auth.js"></script>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <div class="navbar-brand">🩸 Red<span class="dot">404</span></div>
+  <div class="navbar-links">
+    <span id="nav-name" style="color:var(--gray-300);font-size:0.9rem;"></span>
+    <button onclick="logout()" class="btn-nav" style="background:transparent;border:1.5px solid #555;color:var(--gray-300);padding:.4rem 1rem;border-radius:6px;cursor:pointer;font-size:.85rem;">Logout</button>
+  </div>
+</nav>
+
+<div class="dashboard-layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="avatar-letter">D</div>
+      <div class="sidebar-user-name" id="sidebar-name">Donor</div>
+      <div class="sidebar-user-role">Blood Donor</div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="active" onclick="show('overview',this)"><span class="icon">📊</span><span>Overview</span></a>
+      <a href="#" onclick="show('requests',this)"><span class="icon">🩸</span><span>Requests</span></a>
+      <a href="#" onclick="show('profile',this)"><span class="icon">👤</span><span>My Profile</span></a>
+      <a href="#" onclick="show('password',this)"><span class="icon">🔒</span><span>Password</span></a>
+    </nav>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main-content">
+
+    <!-- Overview -->
+    <section id="sec-overview" class="tab-section active">
+      <div class="page-header">
+        <h2 id="welcome-name">Welcome back!</h2>
+        <p>Your donation activity and stats</p>
+      </div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="stat-fulfilled">—</div><div class="stat-label">Donations</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-pending">—</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-accepted">—</div><div class="stat-label">Accepted</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-rejected">—</div><div class="stat-label">Declined</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🩸 Recent Blood Requests</div>
+        <div class="table-wrap" id="overview-requests-wrap">
+          <p style="color:var(--gray-500);font-size:.9rem;">Loading...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Requests -->
+    <section id="sec-requests" class="tab-section">
+      <div class="page-header">
+        <h2>Blood Requests</h2>
+        <p>Sorted by urgency — CRITICAL requests appear first</p>
+      </div>
+      <div id="alert-requests"></div>
+      <div id="requests-list"><p style="color:var(--gray-500);">Loading...</p></div>
+    </section>
+
+    <!-- Profile -->
+    <section id="sec-profile" class="tab-section">
+      <div class="page-header">
+        <h2>My Profile</h2>
+        <p>Update your personal information</p>
+      </div>
+      <div class="card" style="max-width:540px;">
+        <div id="alert-profile"></div>
+        <form onsubmit="updateProfile(event)">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="p-name" class="form-control" required/>
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" id="p-phone" class="form-control"/>
+          </div>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" id="p-address" class="form-control"/>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude</label>
+              <input type="number" id="p-lat" class="form-control" step="any"/>
+            </div>
+            <div class="form-group">
+              <label>Longitude</label>
+              <input type="number" id="p-lon" class="form-control" step="any"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Availability</label>
+            <select id="p-available" class="form-control">
+              <option value="true">Available to Donate</option>
+              <option value="false">Not Available</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" id="profile-btn">Save Changes</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Password -->
+    <section id="sec-password" class="tab-section">
+      <div class="page-header">
+        <h2>Change Password</h2>
+        <p>Keep your account secure</p>
+      </div>
+      <div class="card" style="max-width:420px;">
+        <div id="alert-password"></div>
+        <form onsubmit="changePassword(event)">
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" id="pw-current" class="form-control" required/>
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="pw-new" class="form-control" minlength="8" required/>
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" id="pw-confirm" class="form-control" required/>
+          </div>
+          <button type="submit" class="btn btn-primary" id="pw-btn">Update Password</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/donor.js"></script>
+<script src="js/chatbot.js"></script>
+</body>
+</html>
