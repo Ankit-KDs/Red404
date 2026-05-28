@@ -39,6 +39,8 @@ public class AuthServlet extends HttpServlet {
                 case "/hospital/register" -> hospitalRegister(body, req, res);
                 case "/donor/login"       -> donorLogin(body, req, res);
                 case "/hospital/login"    -> hospitalLogin(body, req, res);
+                case "/donor/forgot-password"    -> donorForgotPassword(body, res);
+                case "/hospital/forgot-password" -> hospitalForgotPassword(body, res);
                 case "/logout"            -> logout(req, res);
                 default                   -> error(res, 404, "Unknown endpoint");
             }
@@ -136,6 +138,52 @@ public class AuthServlet extends HttpServlet {
         session.setAttribute("userType", "HOSPITAL");
         session.setAttribute("userName", h.getName());
         json(res, 200, Map.of("id", h.getId(), "name", h.getName(), "type", "HOSPITAL"));
+    }
+
+    // ── Donor Forgot Password Handler ──
+    private void donorForgotPassword(Map<String, Object> body, HttpServletResponse res) throws Exception {
+        String email = (String) body.get("email");
+        String newPassword = (String) body.get("password");
+
+        // Check if donor exists with this email
+        Donor d = donorDAO.findByEmail(email);
+        if (d == null) {
+            error(res, 404, "Email address not found.");
+            return;
+        }
+
+        // Securely hash the incoming new password and update database
+        String hashed = hashPassword(newPassword);
+        boolean ok = donorDAO.updatePassword(d.getId(), hashed);
+
+        if (ok) {
+            json(res, 200, Map.of("message", "Password reset successfully."));
+        } else {
+            error(res, 500, "Database error: Failed to update password.");
+        }
+    }
+
+    // ── Hospital Forgot Password Handler ──
+    private void hospitalForgotPassword(Map<String, Object> body, HttpServletResponse res) throws Exception {
+        String email = (String) body.get("email");
+        String newPassword = (String) body.get("password");
+
+        // Check if hospital exists with this email
+        Hospital h = hospitalDAO.findByEmail(email);
+        if (h == null) {
+            error(res, 404, "Hospital email not found.");
+            return;
+        }
+
+        // Securely hash the incoming new password and update database
+        String hashed = hashPassword(newPassword);
+        boolean ok = hospitalDAO.updatePassword(h.getId(), hashed);
+
+        if (ok) {
+            json(res, 200, Map.of("message", "Password reset successfully."));
+        } else {
+            error(res, 500, "Database error: Failed to update password.");
+        }
     }
 
     private void logout(HttpServletRequest req, HttpServletResponse res) throws IOException {

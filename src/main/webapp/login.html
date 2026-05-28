@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login — Red404</title>
   <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .forgot-link {
+      display: block;
+      text-align: right;
+      font-size: 0.82rem;
+      color: var(--gray-500);
+      text-decoration: none;
+      margin-top: 6px;
+      margin-bottom: 16px;
+      transition: color 0.2s;
+    }
+    .forgot-link:hover {
+      color: var(--red);
+    }
+  </style>
   <script src="js/auth.js" defer></script>
 </head>
 <body class="auth-page">
@@ -34,6 +49,9 @@
         <label>Password</label>
         <input type="password" id="d-password" class="form-control" placeholder="••••••••" required/>
       </div>
+      
+      <a href="forgot-password.html" class="forgot-link">Forgot Password?</a>
+
       <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="d-btn">
         Sign In as Donor
       </button>
@@ -49,6 +67,9 @@
         <label>Password</label>
         <input type="password" id="h-password" class="form-control" placeholder="••••••••" required/>
       </div>
+
+      <a href="forgot-password.html" class="forgot-link">Forgot Password?</a>
+
       <button type="submit" class="btn btn-secondary" style="width:100%;justify-content:center;" id="h-btn">
         Sign In as Hospital
       </button>

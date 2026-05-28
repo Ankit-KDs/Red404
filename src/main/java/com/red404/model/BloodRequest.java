@@ -16,6 +16,7 @@ public class BloodRequest {
     private Double distanceKm;
     private Timestamp requestedAt;
     private Timestamp respondedAt;
+    private String donorPhone;
 
     public BloodRequest() {}
 
@@ -31,6 +32,9 @@ public class BloodRequest {
 
     public Integer getDonorId()              { return donorId; }
     public void setDonorId(Integer did)      { this.donorId = did; }
+
+    public String getDonorPhone()            { return donorPhone; }
+    public void setDonorPhone(String donorPhone) { this.donorPhone = donorPhone; }
 
     public String getDonorName()             { return donorName; }
     public void setDonorName(String dn)      { this.donorName = dn; }

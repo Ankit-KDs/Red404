@@ -40,18 +40,41 @@ public class HaversineUtil {
      * Returns all 9 neighbouring zone keys (3×3 grid) including center.
      * Used by HospitalDAO to query donors in surrounding zones.
      */
-    public static String[] neighbouringZones(double lat, double lon) {
+    // public static String[] neighbouringZones(double lat, double lon) {
+    //     int latB = (int) Math.floor(lat / BUCKET_SIZE_DEG);
+    //     int lonB = (int) Math.floor(lon / BUCKET_SIZE_DEG);
+    //     String[] zones = new String[9];
+    //     int idx = 0;
+    //     for (int dLat = -1; dLat <= 1; dLat++) {
+    //         for (int dLon = -1; dLon <= 1; dLon++) {
+    //             zones[idx++] = (latB + dLat) + ":" + (lonB + dLon);
+    //         }
+    //     }
+    //     return zones;
+    // }
+
+
+    /**
+     * Returns all neighbouring zone keys based dynamically on search radius.
+     * Overloaded to expand the grid coordinates contextually.
+     */
+    public static java.util.List<String> neighbouringZones(double lat, double lon, double radiusKm) {
         int latB = (int) Math.floor(lat / BUCKET_SIZE_DEG);
         int lonB = (int) Math.floor(lon / BUCKET_SIZE_DEG);
-        String[] zones = new String[9];
-        int idx = 0;
-        for (int dLat = -1; dLat <= 1; dLat++) {
-            for (int dLon = -1; dLon <= 1; dLon++) {
-                zones[idx++] = (latB + dLat) + ":" + (lonB + dLon);
+        
+        // 0.045 degrees is approx 5 km. Calculate how many grid steps to take.
+        int bucketRadius = (int) Math.ceil(radiusKm / 5.0);
+        
+        java.util.List<String> zones = new java.util.ArrayList<>();
+        for (int dLat = -bucketRadius; dLat <= bucketRadius; dLat++) {
+            for (int dLon = -bucketRadius; dLon <= bucketRadius; dLon++) {
+                zones.add((latB + dLat) + ":" + (lonB + dLon));
             }
         }
         return zones;
     }
+
+    
 
     /** Quick check: is distance within threshold? */
     public static boolean isWithinRadius(double lat1, double lon1,

@@ -76,15 +76,13 @@ async function renderDonors(url, title) {
       </div>
       <table>
         <thead><tr>
-          <th>Name</th><th>Blood Group</th><th>Phone</th><th>Address</th>
-          <th>Distance</th><th>Available</th><th>Action</th>
+          <th>Name</th><th>Blood Group</th><th>Address</th><th>Distance</th><th>Available</th><th>Action</th>
         </tr></thead>
         <tbody>
-          ${donors.map(d => `
+        ${donors.map(d => `
             <tr>
               <td><strong>${escHtml(d.name)}</strong></td>
               <td><span class="blood-badge">${escHtml(d.bloodGroup)}</span></td>
-              <td>${escHtml(d.phone)}</td>
               <td style="font-size:.85rem;">${escHtml(d.address)}</td>
               <td><span class="dist-chip">${d.distanceKm} km</span></td>
               <td>
@@ -182,7 +180,13 @@ async function loadMyRequests() {
           <tbody>
             ${requests.map(r => `
               <tr>
-                <td>${escHtml(r.donorName || '—')}</td>
+                <td>
+                  <strong>${escHtml(r.donorName || '—')}</strong>
+                  ${r.status === 'ACCEPTED' && r.donorPhone 
+                    ? `<br/><span style="font-size:0.82rem;color:#C0152A;font-weight:600;display:inline-block;margin-top:4px;">📞 ${escHtml(r.donorPhone)}</span>` 
+                    : ''
+                  }
+                </td>
                 <td><span class="blood-badge">${escHtml(r.bloodGroup)}</span></td>
                 <td style="text-align:center;">${r.unitsNeeded}</td>
                 <td><span class="urgency-${r.urgency}">${r.urgency}</span></td>

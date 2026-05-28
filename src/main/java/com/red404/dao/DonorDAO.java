@@ -1,12 +1,16 @@
 package com.red404.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.red404.model.Donor;
 import com.red404.util.DBConnection;
 import com.red404.util.HaversineUtil;
-
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * DonorDAO — CRUD + zone-based retrieval for donors.
@@ -103,19 +107,70 @@ public class DonorDAO {
      * Uses Haversine to filter precisely within radiusKm.
      * Sorted by distance ASC (natural ordering for PriorityQueue on caller side).
      */
+    // public List<Donor> findNearbyDonors(String bloodGroup, double hospitalLat,
+    //                                      double hospitalLon, double radiusKm) throws SQLException {
+    //     String[] zones = HaversineUtil.neighbouringZones(hospitalLat, hospitalLon);
+    //     StringBuilder inClause = new StringBuilder();
+    //     for (int i = 0; i < zones.length; i++) {
+    //         inClause.append(i == 0 ? "?" : ",?");
+    //     }
+    //     String sql = "SELECT * FROM donors WHERE blood_group=? AND is_available=TRUE AND zone_key IN (" + inClause + ")";
+    //     List<Donor> result = new ArrayList<>();
+    //     try (Connection con = DBConnection.getConnection();
+    //          PreparedStatement ps = con.prepareStatement(sql)) {
+    //         ps.setString(1, bloodGroup);
+    //         for (int i = 0; i < zones.length; i++) ps.setString(i + 2, zones[i]);
+    //         ResultSet rs = ps.executeQuery();
+    //         while (rs.next()) {
+    //             Donor d = mapRow(rs);
+    //             double dist = HaversineUtil.distance(hospitalLat, hospitalLon, d.getLatitude(), d.getLongitude());
+    //             if (dist <= radiusKm) {
+    //                 result.add(d);
+    //             }
+    //         }
+    //     }
+    //     // Sort by distance (DSA: Comparable sort)
+    //     result.sort((a, b) -> Double.compare(
+    //         HaversineUtil.distance(hospitalLat, hospitalLon, a.getLatitude(), a.getLongitude()),
+    //         HaversineUtil.distance(hospitalLat, hospitalLon, b.getLatitude(), b.getLongitude())
+    //     ));
+    //     return result;
+    // }
+
+    // ── Zone-based donor search (DSA: Dynamic Grid Hashing & Optional Filter) ──
     public List<Donor> findNearbyDonors(String bloodGroup, double hospitalLat,
-                                         double hospitalLon, double radiusKm) throws SQLException {
-        String[] zones = HaversineUtil.neighbouringZones(hospitalLat, hospitalLon);
+                                        double hospitalLon, double radiusKm) throws SQLException {
+        
+        // Dynamic grid radius fetch matching the requested boundary
+        List<String> zones = HaversineUtil.neighbouringZones(hospitalLat, hospitalLon, radiusKm);
+        
         StringBuilder inClause = new StringBuilder();
-        for (int i = 0; i < zones.length; i++) {
+        for (int i = 0; i < zones.size(); i++) {
             inClause.append(i == 0 ? "?" : ",?");
         }
-        String sql = "SELECT * FROM donors WHERE blood_group=? AND is_available=TRUE AND zone_key IN (" + inClause + ")";
+        
+        // Check if blood group filtering is actually required ("All Types" handler)
+        boolean filterBg = (bloodGroup != null && !bloodGroup.trim().isEmpty());
+        
+        String sql = "SELECT * FROM donors WHERE is_available=TRUE " 
+                + (filterBg ? "AND blood_group=? " : "") 
+                + "AND zone_key IN (" + inClause + ")";
+                
         List<Donor> result = new ArrayList<>();
         try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, bloodGroup);
-            for (int i = 0; i < zones.length; i++) ps.setString(i + 2, zones[i]);
+            PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            int paramIdx = 1;
+            // Set blood group parameter only if it's explicitly specified
+            if (filterBg) {
+                ps.setString(paramIdx++, bloodGroup);
+            }
+            
+            // Populate the dynamic IN clause markers
+            for (String zone : zones) {
+                ps.setString(paramIdx++, zone);
+            }
+            
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Donor d = mapRow(rs);
@@ -125,13 +180,16 @@ public class DonorDAO {
                 }
             }
         }
-        // Sort by distance (DSA: Comparable sort)
+        
+        // Sort by real-world distance (DSA: Comparable sort)
         result.sort((a, b) -> Double.compare(
             HaversineUtil.distance(hospitalLat, hospitalLon, a.getLatitude(), a.getLongitude()),
             HaversineUtil.distance(hospitalLat, hospitalLon, b.getLatitude(), b.getLongitude())
         ));
         return result;
     }
+
+    
 
     // ── All Donors (for hospital dashboard overview) ─────────────────
     public List<Donor> getAllDonors() throws SQLException {

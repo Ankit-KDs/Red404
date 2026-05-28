@@ -1,11 +1,21 @@
 package com.red404.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+
 import com.red404.model.BloodRequest;
 import com.red404.util.DBConnection;
 import com.red404.util.HaversineUtil;
-
-import java.sql.*;
-import java.util.*;
 
 /**
  * BloodRequestDAO
@@ -79,7 +89,7 @@ public class BloodRequestDAO {
 
     // ── Get all requests by a hospital ───────────────────────────────
     public List<BloodRequest> getRequestsByHospital(int hospitalId) throws SQLException {
-        String sql = "SELECT br.*, h.name AS hospital_name, d.name AS donor_name "
+        String sql = "SELECT br.*, h.name AS hospital_name, d.name AS donor_name, d.phone AS donor_phone "
                    + "FROM blood_requests br "
                    + "JOIN hospitals h ON br.hospital_id = h.id "
                    + "LEFT JOIN donors d ON br.donor_id = d.id "
@@ -145,6 +155,7 @@ public class BloodRequestDAO {
         r.setRespondedAt(rs.getTimestamp("responded_at"));
         try { r.setHospitalName(rs.getString("hospital_name")); } catch (SQLException ignored) {}
         try { r.setDonorName(rs.getString("donor_name")); } catch (SQLException ignored) {}
+        try { r.setDonorPhone(rs.getString("donor_phone")); } catch (SQLException ignored) {} // Add this line
         Object did = rs.getObject("donor_id");
         if (did != null) r.setDonorId((Integer) did);
         return r;
