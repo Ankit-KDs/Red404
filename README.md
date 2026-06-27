@@ -1,4 +1,4 @@
-# 🩸 Red404 - Blood Donation Platform
+# 🩸 Red404 - RealTime Blood Donation Platform
 
 ## What is Red404?
 
