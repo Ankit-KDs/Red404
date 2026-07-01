@@ -164,18 +164,6 @@ Donors can chat with AI assistant to ask:
 
 ---
 
-## 🌟 Why Choose Red404?
-
-|     Feature         |    Red404   | Traditional Method |
-|---------------------|-------------|--------------------|
-| **Find Donor Time** | < 2 minutes | 2-4 hours          |
-| **Accuracy**        | 99%         | 70%                |
-| **Cost**            | Free        | Variable           |
-| **Availability**    | 24/7        | Business hours     |
-| **Coverage**        | Nationwide  | Local only         |
-
----
-
 Perfect for:
 - 🏥 Hospitals and blood banks
 - 👨‍⚕️ Emergency departments  
