@@ -12,7 +12,7 @@ public class DBConnection {
     // private static final String URL      = "jdbc:mysql://localhost:3307/red404new?useSSL=false&serverTimezone=UTC";
     private static final String URL = "jdbc:mysql://localhost:3307/red404new?useSSL=false&serverTimezone=Asia/Kolkata";
     private static final String USER     = "root";
-    private static final String PASSWORD = ""; // change this
+    private static final String PASSWORD = "";
 
     static {
         try {

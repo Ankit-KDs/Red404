@@ -63,14 +63,14 @@
       <div class="form-row">
         <div class="form-group">
           <label>Latitude (your location)</label>
-          <input type="number" id="lat" class="form-control" step="any" placeholder="e.g. 27.8974" readonly/>
+          <input type="number" id="lat" class="form-control" step="any" placeholder="e.g. 27.8974" />
         </div>
         <div class="form-group">
           <label>Longitude (your location)</label>
-          <input type="number" id="lon" class="form-control" step="any" placeholder="e.g. 78.0880" readonly/>
+          <input type="number" id="lon" class="form-control" step="any" placeholder="e.g. 78.0880" />
         </div>
       </div>
-      <button type="button" class="btn btn-outline btn-sm" onclick="getLocation()" style="margin-bottom:1rem;">
+      <button type="button" class="btn btn-outline btn-sm" onclick="getLocation(event)" style="margin-bottom:1rem;">
         📍 Auto-detect My Location
       </button>
       <div class="form-row">
@@ -95,8 +95,8 @@
 </div>
 
 <script>
-  function getLocation() {
-    const btn = event.target;
+  function getLocation(e) {
+    const btn = e.target;
     detectLocation('lat', 'lon', btn);  // auth.js helper
   }
 

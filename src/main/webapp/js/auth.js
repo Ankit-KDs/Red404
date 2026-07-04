@@ -11,6 +11,9 @@ const Auth = {
     sessionStorage.setItem('userId',   data.id);
     sessionStorage.setItem('userName', data.name);
     sessionStorage.setItem('userType', data.type);
+
+    if (data.latitude)  sessionStorage.setItem('userLat', data.latitude);
+    if (data.longitude) sessionStorage.setItem('userLon', data.longitude);
   },
 
   // Clear session on logout

@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadStats();
   loadMyRequests();
   loadProfile();
+
+  loadNearbyDonorsOnLoad();
 });
 
 function setName(name) {
@@ -49,7 +51,14 @@ async function loadStats() {
 async function searchDonors() {
   const bg     = document.getElementById('search-bg').value;
   const radius = document.getElementById('search-radius').value;
+
+  const lat = sessionStorage.getItem('userLat');
+  const lon = sessionStorage.getItem('userLon');
+
   let url = `/api/hospital/donors/nearby?radius=${radius}`;
+  if (lat && lon) {
+    url += `&lat=${lat}&lon=${lon}`;
+  }
   if (bg) url += `&bg=${encodeURIComponent(bg)}`;
   renderDonors(url, `Nearby donors within ${radius} km${bg ? ' with ' + bg : ''}`);
 }
@@ -64,6 +73,15 @@ async function renderDonors(url, title) {
   try {
     const { ok, data: donors } = await API.get(url);
     if (!ok) { showAlert('alert-donors', donors.error || 'Failed to load donors.', 'error'); return; }
+
+    if (donors) {
+        // 1. Jitne filtered donors aaye, unhe "TOTAL DONORS" box me daalo
+        document.getElementById('stat-pending').textContent = donors.length;
+        
+        // 2. Unme se jitne available=true hain, unka count nikaal kar "AVAILABLE" box me daalo
+        const availableCount = donors.filter(d => d.available === true).length;
+        document.getElementById('stat-accepted').textContent = availableCount;
+    }
 
     if (donors.length === 0) {
       document.getElementById('donors-table-wrap').innerHTML =
@@ -271,3 +289,20 @@ async function changePassword(e) {
 }
 
 // logout() provided globally by auth.js
+
+
+// 🔥 adding new file
+async function loadNearbyDonorsOnLoad() {
+  const lat = sessionStorage.getItem('userLat');
+  const lon = sessionStorage.getItem('userLon');
+  const radius = 20.0; // Max to max 20 km boundary
+
+  if (!lat || !lon) {
+    console.warn("Hospital coordinates missing in session. Loading all profiles as fallback.");
+    loadAllDonors(); // Agar login data me lat/lon nahi mila toh safe side saare dikha do
+    return;
+  }
+
+  let url = `/api/hospital/donors/nearby?radius=${radius}&lat=${lat}&lon=${lon}`;
+  renderDonors(url, `Nearby donors within 50 km`);
+}
