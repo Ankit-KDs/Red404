@@ -39,6 +39,13 @@
             <version>8.3.0</version>
         </dependency>
 
+        <!-- Spring Boot 2.7.18 (Compatible with javax.servlet) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>2.7.18</version>
+        </dependency>
+
     </dependencies>
 
     <build>
